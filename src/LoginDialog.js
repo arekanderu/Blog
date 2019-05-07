@@ -23,6 +23,8 @@ this.state = {
     password: '',
     databaseUserNames: {},
     databasePasswords: {},
+    errorUsername: false,
+    errorPassword: false,
   }
 }
 
@@ -58,28 +60,39 @@ this.state = {
     let textfieldUsername = this.state.username;
     let usernameResult = false;
 
+    if(this.state.username === '') {
+      this.setState({ errorUsername: true })
+    }
+
+    else {
+    this.setState({ errorUsername: false })
     Object.values(tempUsername).map(function(value){ 
       if(textfieldUsername === value) {
         usernameResult = true;
       }
     })
+  }
 
     let tempPassword = this.state.databasePasswords;
     let textFieldPassword = this.state.password;
-    console.log()
     let passwordResult = false;
 
-    Object.values(tempPassword).map(function(value){
-      if(textFieldPassword === value){
-        passwordResult = true;
+    if(this.state.password === '' ) {
+     this.setState({ errorPassword: true }) 
+    }
+
+    else {
+      this.setState({ errorPassword: false })    
+      Object.values(tempPassword).map(function(value){
+        if(textFieldPassword === value){
+         passwordResult = true;
       }
     })
+  }
 
     if(usernameResult && passwordResult) {
       alert('it worked')
     }
-
-    
   }
     
 
@@ -112,6 +125,7 @@ this.state = {
                 variant="outlined"
                 fullWidth
                 onChange={this.handleOnChange.bind(this)}
+                error={this.state.errorUsername}
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
@@ -132,6 +146,7 @@ this.state = {
                 variant="outlined"
                 fullWidth
                 onChange={this.handleOnChange.bind(this)}
+                error={this.state.errorPassword}
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">

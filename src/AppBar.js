@@ -10,6 +10,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 // import { Link } from "react-router-dom";
 import LoginDialog from './LoginDialog';
 
+//Properties of App Bar
 const styles = {
   root: {
     flexGrow: 1,
@@ -28,10 +29,12 @@ class NavBar extends React.Component {
     open: false,
   };
 
+  //Handles the opening of the login box
   handleOnClick = () => {
     this.setState({ open: true });
   }
 
+  //Handles the close of the login box
   handleClose = () => {
     this.setState({ open: false })
   }

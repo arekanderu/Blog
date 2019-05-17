@@ -25,80 +25,102 @@ this.state = {
     databasePasswords: {},
     errorUsername: false,
     errorPassword: false,
-  }
-}
-
-  handleClose = () => {
-    this.setState({ open: false });
+    errorLabelUsername: 'Username',
+    errorLabelPassword: 'Password',
+    errorMessage: ''
   };
 
-  handleOnChange = (e) => {
-    this.setState({[e.target.id]: e.target.value })
-  };
-
-  readUserData = () => {
-    let arrayUsername = [];
-    let arrayPassword = [];
-
-    Connect.database().ref('UserAccount').once('value', (snapshot) => {
-      snapshot.forEach(item => {   
-        let tempUsername = item.val().Username
-        arrayUsername.push(tempUsername);
-
-        let tempPassword = item.val().Password
-        arrayPassword.push(tempPassword)
-
-        this.setState({ databaseUserNames: arrayUsername,
-                        databasePasswords: arrayPassword })
-      })
-    });
+  this.handleOnClick = this.handleOnClick.bind(this);
 }
 
-  handleOnClick = () => {
-  
-    let tempUsername = this.state.databaseUserNames;
-    let textfieldUsername = this.state.username;
-    let usernameResult = false;
+//Handle the change of the textbox. Set the state of the given value to the content of the text box.
+handleOnChange = (e) => {
+  this.setState({[e.target.id]: e.target.value })
+};
 
-    if(this.state.username === '') {
-      this.setState({ errorUsername: true })
-    }
+//Read the database and set it on the state.
+readUserData = () => {
+  let arrayUsername = [];
+  let arrayPassword = [];
 
-    else {
-    this.setState({ errorUsername: false })
-    Object.values(tempUsername).map(function(value){ 
-      if(textfieldUsername === value) {
+  Connect.database().ref('UserAccount').once('value', (snapshot) => {
+    snapshot.forEach(item => {   
+      let tempUsername = item.val().Username
+      arrayUsername.push(tempUsername);
+
+      let tempPassword = item.val().Password
+      arrayPassword.push(tempPassword)
+
+      this.setState({ databaseUserNames: arrayUsername,
+                      databasePasswords: arrayPassword })
+    })
+  });
+}
+
+//Handle Click and validation.
+handleOnClick = () => {
+
+  let databaseUsernames = this.state.databaseUserNames;
+  let databasePassword = this.state.databasePasswords;
+  let textfieldUsername = this.state.username;
+  let textfieldPassword = this.state.password;
+  let usernameResult = false;
+  let passwordResult = false;
+
+  Object.values(databaseUsernames).map(function(value, id){ 
+    if(textfieldUsername === value) {
         usernameResult = true;
+      if(textfieldPassword === databasePassword[id]){
+        passwordResult = true;
       }
-    })
-  }
-
-    let tempPassword = this.state.databasePasswords;
-    let textFieldPassword = this.state.password;
-    let passwordResult = false;
-
-    if(this.state.password === '' ) {
-     this.setState({ errorPassword: true }) 
     }
+  })
 
-    else {
-      this.setState({ errorPassword: false })    
-      Object.values(tempPassword).map(function(value){
-        if(textFieldPassword === value){
-         passwordResult = true;
+  if(textfieldUsername !== ''){
+    this.setState({ errorLabelUsername: 'Username',
+                    errorUsername: false })
+
+      if(!usernameResult) {
+        this.setState({ errorLabelUsername: 'Error',
+                        errorUsername: true,
+                        errorMessage: 'Username is not registered.' })
       }
-    })
+
+      else {
+        this.setState({ errorLabelUsername: 'Username',
+                        errorLabelUsername: false})
+      }
+
+      if(!passwordResult && usernameResult) {
+        this.setState({ errorLabelPassword: 'Error',
+                        errorPassword: true,
+                        errorMessage: 'Password is incorrect.'})
+      }
+
+      if(usernameResult && passwordResult){
+        this.setState({ errorLabelUsername: 'Username',
+                        errorUsername: false,
+                        errorLabelPassword: 'Password',
+                        errorPassword: false,
+                        errorMessage: '' })
+        alert('Hahahaha')
+      }
   }
 
-    if(usernameResult && passwordResult) {
-      alert('it worked')
+  else {
+    this.setState({ errorLabelUsername: 'Required',
+                    errorUsername: true })
+
+    if(textfieldPassword === '') {
+      this.setState({ errorLabelPassword: 'Required',
+                      errorPassword: true })
     }
   }
-    
+}    
 
-  componentDidMount(){
-    this.readUserData();
-  }
+componentDidMount(){
+  this.readUserData();
+}
 
   render() {
     return (
@@ -118,7 +140,7 @@ this.state = {
             <form autoComplete="off">
             <TextField
                 id="username"
-                label="Username"
+                label={this.state.errorLabelUsername}
                 type="email"
                 placeholder="Please enter your username"
                 margin="normal"
@@ -134,12 +156,12 @@ this.state = {
                                     )
                 }}
             />
-
+            
             <br />
 
             <TextField
                 id="password"
-                label="Password"
+                label={this.state.errorLabelPassword}
                 type="password"
                 placeholder="Please enter your password"
                 margin="normal"
@@ -155,8 +177,7 @@ this.state = {
                     )
                 }}
               />
-              
-            <br />
+           <h5 className="error-message">{this.state.errorMessage}</h5>
            <Link to="/ForgotPassword" className="link">Forgot your password?</Link>
             </form>
 

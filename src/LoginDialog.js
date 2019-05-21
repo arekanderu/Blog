@@ -10,7 +10,8 @@ import { Link } from "react-router-dom";
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Lock from '@material-ui/icons/Lock';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import Connect from './Config/Database';
+import { connect } from 'react-redux';
+import { getFirstName } from './Action/index';
 
 class AlertDialog extends React.Component {
   
@@ -21,13 +22,12 @@ this.state = {
     open: false,
     username: '',
     password: '',
-    databaseUserNames: {},
-    databasePasswords: {},
     errorUsername: false,
     errorPassword: false,
     errorLabelUsername: 'Username',
     errorLabelPassword: 'Password',
-    errorMessage: ''
+    errorMessage: '',
+    userFirstName: ''
   };
 
   this.handleOnClick = this.handleOnClick.bind(this);
@@ -38,43 +38,29 @@ handleOnChange = (e) => {
   this.setState({[e.target.id]: e.target.value })
 };
 
-//Read the database and set it on the state.
-readUserData = () => {
-  let arrayUsername = [];
-  let arrayPassword = [];
-
-  Connect.database().ref('UserAccount').once('value', (snapshot) => {
-    snapshot.forEach(item => {   
-      let tempUsername = item.val().Username
-      arrayUsername.push(tempUsername);
-
-      let tempPassword = item.val().Password
-      arrayPassword.push(tempPassword)
-
-      this.setState({ databaseUserNames: arrayUsername,
-                      databasePasswords: arrayPassword })
-    })
-  });
-}
-
 //Handle Click and validation.
 handleOnClick = () => {
 
-  let databaseUsernames = this.state.databaseUserNames;
-  let databasePassword = this.state.databasePasswords;
+  let databaseUsernames = this.props.usernames;
+  let databasePassword = this.props.passwords;
+  let databaseFirstName = this.props.firstname;
   let textfieldUsername = this.state.username;
   let textfieldPassword = this.state.password;
   let usernameResult = false;
   let passwordResult = false;
+  let firstName = '';
 
   Object.values(databaseUsernames).map(function(value, id){ 
+      
     if(textfieldUsername === value) {
         usernameResult = true;
       if(textfieldPassword === databasePassword[id]){
         passwordResult = true;
+        firstName = databaseFirstName[id];
       }
     }
   })
+  this.props.getFirstName(firstName);
 
   if(textfieldUsername !== ''){
     this.setState({ errorLabelUsername: 'Username',
@@ -103,7 +89,10 @@ handleOnClick = () => {
                         errorLabelPassword: 'Password',
                         errorPassword: false,
                         errorMessage: '' })
-        alert('Hahahaha')
+        this.props.action();  
+        this.props.welcomeMessage();               
+        this.props.close();
+          
       }
   }
 
@@ -116,13 +105,9 @@ handleOnClick = () => {
                       errorPassword: true })
     }
   }
-}    
+} 
 
-componentDidMount(){
-  this.readUserData();
-}
-
-  render() {
+render() {
     return (
       <div>
         <Dialog
@@ -183,6 +168,7 @@ componentDidMount(){
 
             </DialogContentText>
           </DialogContent>
+          {/* {this.renderRedirect()} */}
           <DialogActions>
             <Button onClick={this.props.close} color="primary">
               Cancel
@@ -192,9 +178,16 @@ componentDidMount(){
             </Button>
           </DialogActions>
         </Dialog>
+        {console.log(this.props.firstName)}
       </div>
     );
   }
 }
 
-export default AlertDialog;
+function mapStateToProps(state){
+  return{
+    firstName: state.firstName
+  }
+}
+
+export default connect(mapStateToProps, {getFirstName})(AlertDialog);

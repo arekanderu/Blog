@@ -31,32 +31,43 @@ class NavBar extends React.Component {
     databaseUserNames: {},
     databasePasswords: {},
     databaseFirstNames: {},
-    databaseFirstNames: {},
+    databaseLastNames: {},
+    databaseAvatars: {},
     action: 'LOGIN',
-    message: ''
+    message: '',
+    openMainPage: true,
   };
 
     //Read the database and set it on the state.
     readUserData = () => {
-      let arrayUsername = [];
-      let arrayPassword = [];
-      let arrayFirstNames = [];
+      let arrayUsernames = [],
+          arrayPasswords = [],
+          arrayFirstNames = [],
+          arrayLastNames = [],
+          arrayAvatars = [];
     
       Connect.database().ref('UserAccount').once('value', (snapshot) => {
         snapshot.forEach(item => {   
           let tempUsername = item.val().Username
-          arrayUsername.push(tempUsername);
+          arrayUsernames.push(tempUsername);
     
           let tempPassword = item.val().Password
-          arrayPassword.push(tempPassword);
+          arrayPasswords.push(tempPassword);
 
           let tempFirstNames = item.val().FirstName
           arrayFirstNames.push(tempFirstNames);
-    
-          this.setState({ databaseUserNames: arrayUsername,
-                          databasePasswords: arrayPassword,
-                          databaseFirstNames: arrayFirstNames })
 
+          let tempLastNames = item.val().LastName
+          arrayLastNames.push(tempLastNames);
+
+          let tempAvatars = item.val().Avatar
+          arrayAvatars.push(tempAvatars);
+    
+          this.setState({ databaseUserNames: arrayUsernames,
+                          databasePasswords: arrayPasswords,
+                          databaseFirstNames: arrayFirstNames,
+                          databaseLastNames: arrayLastNames,
+                          databaseAvatars: arrayAvatars })
         })
       });
     }
@@ -71,7 +82,8 @@ class NavBar extends React.Component {
 
       else {
         this.setState({ action: 'LOGIN',
-                        message: ''})
+                        message: '',
+                        openMainPage: false })
 
       }
   }
@@ -81,15 +93,21 @@ class NavBar extends React.Component {
     this.setState({ open: false })
   }
 
-  handleButtonNameChange = () => {
-    this.setState({ action: 'LOG OUT'})
+  //Change button to log out then displays welcome string and open main page.
+  handleChange = () => {
+    this.setState({ action: 'LOG OUT',
+                    message: 'Welcome ',
+                    openMainPage: true })
   }
 
-  handleWelcomeMessage = () => {
-    this.setState({ message: 'Welcome ' + this.props.firstName })
+  //Adds welcome message to the username
+  showUsersFirstName = () => {
+      if(this.state.openMainPage) {
+        return this.state.message + this.props.firstName + ' ' + this.props.lastName
+      }
   }
 
-  componentDidMount(){
+  componentWillMount(){
     this.readUserData();
   }
 
@@ -104,22 +122,21 @@ render(){
             <Typography variant="h6" color="inherit" style={styles.grow}>
               Blog Project
             </Typography>
-            {this.state.message} {this.props.firstName} 
-            {/* <Link to="/LoginDialog"> */}
+            {this.showUsersFirstName()}
             <Button onClick={this.handleOnClick} color="inherit">
-              {this.state.action}
+              {this.state.action} 
             </Button>
             <LoginDialog open={this.state.open} 
                          close={this.handleClose}
                          usernames={this.state.databaseUserNames}
                          passwords={this.state.databasePasswords} 
-                         firstname={this.state.databaseFirstNames}
-                         action={this.handleButtonNameChange}
-                         welcomeMessage = {this.handleWelcomeMessage}/>
-            {/* </Link> */}
+                         firstnames={this.state.databaseFirstNames}
+                         lastNames={this.state.databaseLastNames}
+                         avatars={this.state.databaseAvatars}
+                         action={this.handleChange}/>
           </Toolbar>
         </AppBar> 
-        <MainPage/>
+        {this.state.openMainPage ? <MainPage avatar={this.props.avatar}/> : ''}
       </div>
     );
   }
@@ -127,7 +144,9 @@ render(){
 
 function mapStateToProps(state) {
   return{
-    firstName: state.firstName
+    firstName: state.firstName,
+    lastName: state.lastName,
+    avatar: state.avatar
   }
 }
 

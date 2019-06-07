@@ -8,10 +8,13 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import { Link } from "react-router-dom";
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import Lock from '@material-ui/icons/Lock';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { connect } from 'react-redux';
-import { getFirstName } from './Action/index';
+import { getFirstName, getLastName, getAvatar, getUsername } from './Action/index';
+import IconButton from '@material-ui/core/IconButton';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+
 
 class AlertDialog extends React.Component {
   
@@ -27,7 +30,8 @@ this.state = {
     errorLabelUsername: 'Username',
     errorLabelPassword: 'Password',
     errorMessage: '',
-    userFirstName: ''
+    userFirstName: '',
+    passwordVisibility: false
   };
 
   this.handleOnClick = this.handleOnClick.bind(this);
@@ -41,26 +45,40 @@ handleOnChange = (e) => {
 //Handle Click and validation.
 handleOnClick = () => {
 
-  let databaseUsernames = this.props.usernames;
-  let databasePassword = this.props.passwords;
-  let databaseFirstName = this.props.firstname;
-  let textfieldUsername = this.state.username;
-  let textfieldPassword = this.state.password;
-  let usernameResult = false;
-  let passwordResult = false;
-  let firstName = '';
+  let databaseUsernames = this.props.usernames,
+      databasePassword = this.props.passwords,
+      databaseFirstName = this.props.firstnames,
+      databaseLastName = this.props.lastNames,
+      databaseAvatar = this.props.avatars,
+      textfieldUsername = this.state.username,
+      textfieldPassword = this.state.password,
+      usernameResult = false,
+      passwordResult = false,
+      firstName = '',
+      lastName = '',
+      avatar = '',
+      userName = '';
 
   Object.values(databaseUsernames).map(function(value, id){ 
       
     if(textfieldUsername === value) {
         usernameResult = true;
+        
       if(textfieldPassword === databasePassword[id]){
         passwordResult = true;
         firstName = databaseFirstName[id];
+        lastName = databaseLastName[id];
+        avatar = databaseAvatar[id];
+        userName = databaseUsernames[id];
+        
       }
     }
   })
+
+  this.props.getAvatar(avatar);
   this.props.getFirstName(firstName);
+  this.props.getLastName(lastName);
+  this.props.getUsername(userName);
 
   if(textfieldUsername !== ''){
     this.setState({ errorLabelUsername: 'Username',
@@ -74,7 +92,7 @@ handleOnClick = () => {
 
       else {
         this.setState({ errorLabelUsername: 'Username',
-                        errorLabelUsername: false})
+                        errorUsername: false})
       }
 
       if(!passwordResult && usernameResult) {
@@ -89,10 +107,8 @@ handleOnClick = () => {
                         errorLabelPassword: 'Password',
                         errorPassword: false,
                         errorMessage: '' })
-        this.props.action();  
-        this.props.welcomeMessage();               
+        this.props.action();           
         this.props.close();
-          
       }
   }
 
@@ -106,6 +122,10 @@ handleOnClick = () => {
     }
   }
 } 
+
+handlePasswordVisibility = () => {
+  this.setState({ passwordVisibility: !this.state.passwordVisibility })
+}
 
 render() {
     return (
@@ -133,6 +153,7 @@ render() {
                 fullWidth
                 onChange={this.handleOnChange.bind(this)}
                 error={this.state.errorUsername}
+                autoFocus
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
@@ -147,7 +168,7 @@ render() {
             <TextField
                 id="password"
                 label={this.state.errorLabelPassword}
-                type="password"
+                type={this.state.passwordVisibility ? "text" : "password"}
                 placeholder="Please enter your password"
                 margin="normal"
                 variant="outlined"
@@ -155,10 +176,13 @@ render() {
                 onChange={this.handleOnChange.bind(this)}
                 error={this.state.errorPassword}
                 InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <Lock />
-                        </InputAdornment>
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton edge="end"
+                                    onClick={() => this.handlePasswordVisibility()}
+              >           {this.state.passwordVisibility ? <VisibilityOff /> : <Visibility/>}
+                        </IconButton>
+                      </InputAdornment>
                     )
                 }}
               />
@@ -168,17 +192,15 @@ render() {
 
             </DialogContentText>
           </DialogContent>
-          {/* {this.renderRedirect()} */}
           <DialogActions>
             <Button onClick={this.props.close} color="primary">
               Cancel
             </Button>
-            <Button onClick={() => this.handleOnClick()} color="primary" autoFocus>
+            <Button onClick={() => this.handleOnClick()} color="primary">
               Confirm
             </Button>
           </DialogActions>
         </Dialog>
-        {console.log(this.props.firstName)}
       </div>
     );
   }
@@ -186,8 +208,11 @@ render() {
 
 function mapStateToProps(state){
   return{
-    firstName: state.firstName
+    firstName: state.firstName,
+    lastName: state.lastName,
+    avatar: state.avatar,
+    userName: state.userName
   }
 }
 
-export default connect(mapStateToProps, {getFirstName})(AlertDialog);
+export default connect(mapStateToProps, { getFirstName, getLastName, getAvatar, getUsername })(AlertDialog);

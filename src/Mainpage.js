@@ -7,6 +7,10 @@ import Send from '@material-ui/icons/Send';
 import Clear from '@material-ui/icons/Clear';
 import Connect from './Config/Database';
 import { connect } from 'react-redux';
+import Delete from '@material-ui/icons/Delete';
+import Edit from '@material-ui/icons/Edit';
+import DeleteDialog from './DeleteDialog';
+
 
 class MainPage extends React.Component {
   
@@ -16,7 +20,14 @@ class MainPage extends React.Component {
     this.state = {
         title: '',
         content: '',
-        databaseBlogPost: ''
+        databaseBlogPost: '',
+        keyValue: '',
+        errorTitle: false,
+        errorContent: false,
+        placeHolderTitle: 'Whats going on?',
+        placeHolderContent: 'Tell us what you feel...',
+        open: false,
+        
       };
     }
 
@@ -26,19 +37,49 @@ class MainPage extends React.Component {
     };
 
     handleOnClick = () => {
-        let ref = Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName)
-        let time = new Date().toLocaleString();
+        let ref = Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName),
+            time = new Date().toLocaleString(),
+            titleEntry = this.state.title,
+            contentEntry = this.state.content
+        
+        if(titleEntry === '' && contentEntry === ''){
+          this.setState({ errorTitle: true,
+                          errorContent: true,
+                          placeHolderTitle: 'Please enter a title',
+                          placeHolderContent: 'Please enter something to start a blog' })
+        }
 
+        else if(titleEntry === '') {
+          this.setState({ errorTitle: true,
+                          errorContent: false,
+                          placeHolderTitle: 'Please enter a title' })
+        }
+
+        else if(contentEntry === '') {
+          this.setState({ errorContent: true,
+                          errorTitle: false,
+                          placeHolderContent: 'Please enter something' })
+        }
+
+        else {
+              this.setState({ errorTitle: false,
+                              errorContent: false,
+                              placeHolderTitle: 'Whats going on?',
+                              placeHolderContent: 'Tell us what you feel...' })
+          
         let postData = {
-          title: this.state.title,
-          content: this.state.content,
+          title: titleEntry,
+          content: contentEntry,
           date: time
         }
 
         ref.push(postData);
-
         this.setState({ title: '',
                         content: ''})
+        this.readUserData()
+      }
+
+        
     }
 
     handleOnClickCancel = () => {
@@ -47,40 +88,59 @@ class MainPage extends React.Component {
     }
     
     readUserData = () => {
-      let arrayBlogPosts = [];
+      let arrayBlogPosts = [],
+          arrayKeyValue = [];
 
       Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName).once('value', snapshot => {
         snapshot.forEach(item => { 
           
-          let tempBlogPost = item.val()
-          arrayBlogPosts.push(tempBlogPost);
+          let tempBlogPost = item.val(),
+              tempKeyValue = item.key;
 
-          this.setState({ databaseBlogPost: arrayBlogPosts })
+          arrayBlogPosts.push(tempBlogPost);
+          arrayKeyValue.push(tempKeyValue);
+
         })
+        arrayBlogPosts.reverse();
+        arrayKeyValue.reverse();
+
+        this.setState({ databaseBlogPost: arrayBlogPosts,
+                        keyValue: arrayKeyValue })
     });
     }
 
-    componentDidUpdate(){
+    handleDelete = (key) =>
+    {
+      this.setState({ open: true })
+      let ref = Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName)
+      ref.child(key).remove();
+      this.readUserData()
+    }
+
+    componentDidMount(){
       this.readUserData()
     }
 
     render() {
+      const { databaseBlogPost, keyValue } = this.state;
         return (
           <div>
-              <Grid justify="center" container spacing={16}>
+            <br />
+            <Grid justify="center" container spacing={16}>
               <Avatar className="post" alt="Remy Sharp" src={this.props.avatar} />
                 <Grid item xs={10}>
-                <form autoComplete="off">
 
+                <form autoComplete="off">
                   <TextField
                     id="title"
                     type="text"
-                    placeholder="Whats going on?"
+                    placeholder={this.state.placeHolderTitle}
                     margin="normal"
                     variant="outlined"
                     value={this.state.title}
                     onChange={this.handleOnChange.bind(this)}
-                    fullWidth/>
+                    error={this.state.errorTitle}
+                    fullWidth />
 
                   <TextField
                     id="content"
@@ -90,9 +150,10 @@ class MainPage extends React.Component {
                     fullWidth
                     variant="outlined"
                     marginal="normal"
-                    placeholder="Tell us what you feel..."
+                    placeholder={this.state.placeHolderContent}
                     value={this.state.content}
-                    onChange={this.handleOnChange.bind(this)}/>
+                    onChange={this.handleOnChange.bind(this)} 
+                    error={this.state.errorContent} />
                     
                     <br />
                     <br />
@@ -108,15 +169,21 @@ class MainPage extends React.Component {
                 
                 <br />
                 <br />
+                  {Object.values(databaseBlogPost).map(({title,date, content}, i) => (
+                  <div>
+                  <h1>{title}</h1>
+                  <h5 className="icons"> 
+                  <Edit /> <Delete onClick={() => this.handleDelete(keyValue[i])}/>
+                  </h5>
+                  <small>{date}</small>
+                  <p>{content}</p>
+                  <hr />
+                  <br />
+                  <br />
+                  </div>
+                  ))}
+                  <DeleteDialog open={this.state.open} />
 
-                {Object.values(this.state.databaseBlogPost).map(post => {
-                  return (<div>
-                          <h1>{post.title}</h1>
-                          <h3>{post.date}</h3>
-                          <p>{post.content}</p>
-                          </div>
-                  );
-                })}
                 </Grid>
                 </Grid>
           </div>

@@ -16,6 +16,7 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 
+
 class AlertDialog extends React.Component {
   
 constructor(props){
@@ -35,6 +36,8 @@ this.state = {
   };
 
   this.handleOnClick = this.handleOnClick.bind(this);
+  this.handleOnChange = this.handleOnChange.bind(this);
+  this.handlePasswordVisibility = this.handlePasswordVisibility.bind(this);
 }
 
 //Handle the change of the textbox. Set the state of the given value to the content of the text box.

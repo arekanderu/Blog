@@ -11,6 +11,8 @@ import Connect from './Config/Database';
 import { connect } from 'react-redux';
 import MainPage from './Mainpage';
 
+require('./LoginDialog');
+
 //Properties of App Bar
 const styles = {
   root: {
@@ -26,17 +28,26 @@ const styles = {
 };
 
 class NavBar extends React.Component {
-  state = {
-    open: false,
-    databaseUserNames: {},
-    databasePasswords: {},
-    databaseFirstNames: {},
-    databaseLastNames: {},
-    databaseAvatars: {},
-    action: 'LOGIN',
-    message: '',
-    openMainPage: true,
+  constructor(props){
+    super(props)
+  
+  this.state = {
+        open: false,
+        databaseUserNames: {},
+        databasePasswords: {},
+        databaseFirstNames: {},
+        databaseLastNames: {},
+        databaseAvatars: {},
+        action: 'LOGIN',
+        message: '',
+        openMainPage: false,
   };
+
+  this.handleOnClick = this.handleOnClick.bind(this);
+  this.handleClose = this.handleClose.bind(this);
+  this.handleChange = this.handleChange.bind(this);
+
+  }
 
     //Read the database and set it on the state.
     readUserData = () => {

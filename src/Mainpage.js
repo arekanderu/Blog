@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import DeleteDialog from './DeleteDialog';
-
+import EditDialog from './EditDialog';
 
 class MainPage extends React.Component {
   
@@ -27,7 +27,10 @@ class MainPage extends React.Component {
         placeHolderTitle: 'Whats going on?',
         placeHolderContent: 'Tell us what you feel...',
         open: false,
-        
+        titleValue: '',
+        contentValue: '',
+        key: '',
+        action: '',
       };
     }
 
@@ -36,6 +39,7 @@ class MainPage extends React.Component {
       this.setState({[e.target.id]: e.target.value })
     };
 
+    //When clicked the post will be validated whether its empty if not it will be posted to the database and run an update. 
     handleOnClick = () => {
         let ref = Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName),
             time = new Date().toLocaleString(),
@@ -82,11 +86,13 @@ class MainPage extends React.Component {
         
     }
 
+    //If cancel button is clicked it will delete the textfield.
     handleOnClickCancel = () => {
       this.setState({ title: '',
                         content: ''})
     }
     
+    //Read the data in the database and put it in states. 
     readUserData = () => {
       let arrayBlogPosts = [],
           arrayKeyValue = [];
@@ -109,12 +115,61 @@ class MainPage extends React.Component {
     });
     }
 
-    handleDelete = (key) =>
+    //Delete the blog post content from the database.
+    handleDelete = () =>
     {
-      this.setState({ open: true })
-      let ref = Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName)
-      ref.child(key).remove();
+      let ref = Connect.database().ref('BlogPost/' + this.props.firstName + ' ' + this.props.lastName),
+          key = this.state.key
+
+      if(key !== '') {
+        ref.child(key).remove();
+      }
+
       this.readUserData()
+    }
+
+    //When click the delete button it will set the appropriate states.
+    handleOnClickEditDelete = (key, title, content, action) => {
+      this.setState({ action: action,
+                      open: true,
+                      key: key,
+                      titleValue: title,
+                      contentValue: content })
+    }
+
+
+    //Handles the close of the login box
+    handleClose = () => {
+    this.setState({ open: false })
+    }
+
+    actionChecker = () => {
+      let action = this.state.action;
+
+      if(action === 'delete') {
+        return (
+          <div>
+            <DeleteDialog open={this.state.open} 
+                          title={this.state.titleValue} 
+                          content={this.state.contentValue}
+                          close={this.handleClose}
+                          delete={this.handleDelete}/>
+          </div>
+        );
+      }
+      else if(action === 'edit') {
+        return(
+          <div>
+            <EditDialog open={this.state.open} 
+                        title={this.state.titleValue} 
+                        content={this.state.contentValue}
+                        keyValue={this.state.key}
+                        close={this.handleClose}
+                        refresh={this.readUserData}/>
+
+          </div>
+        );
+      }
     }
 
     componentDidMount(){
@@ -144,6 +199,7 @@ class MainPage extends React.Component {
 
                   <TextField
                     id="content"
+                    type="text"
                     multiline={true}
                     rows={10}
                     rowsMax={15}
@@ -173,17 +229,26 @@ class MainPage extends React.Component {
                   <div>
                   <h1>{title}</h1>
                   <h5 className="icons"> 
-                  <Edit /> <Delete onClick={() => this.handleDelete(keyValue[i])}/>
+                  
+                  <Edit onClick={() => this.handleOnClickEditDelete(keyValue[i], title, content, 'edit')}/> 
+                  
+                  <Delete onClick={() => this.handleOnClickEditDelete(keyValue[i], title, content, 'delete')}/>
+                  
                   </h5>
                   <small>{date}</small>
-                  <p>{content}</p>
+                  
+                  <pre className="content-style">
+                  {content}
+                  </pre>
+                  
                   <hr />
-                  <br />
                   <br />
                   </div>
                   ))}
-                  <DeleteDialog open={this.state.open} />
 
+                  {this.actionChecker()}
+
+                
                 </Grid>
                 </Grid>
           </div>

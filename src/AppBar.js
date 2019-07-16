@@ -11,8 +11,6 @@ import Connect from './Config/Database';
 import { connect } from 'react-redux';
 import MainPage from './Mainpage';
 
-require('./LoginDialog');
-
 //Properties of App Bar
 const styles = {
   root: {

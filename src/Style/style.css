@@ -18,5 +18,9 @@
 
 .icons{
     margin-top: -40px;
-    margin-left: 1200px;
+    float: right;
+}
+
+.content-style{
+    white-space: pre-wrap;
 }

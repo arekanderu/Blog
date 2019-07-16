@@ -16,6 +16,11 @@ constructor(props){
     }
 }
 
+handleOnClick = () => {
+  this.props.delete();
+  this.props.close();
+}
+
 render(){
     return(
         <div>
@@ -25,11 +30,12 @@ render(){
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
           fullWidth={true}
-          maxWidth="xs"
-        >
+          maxWidth="xs">
           <DialogTitle id="alert-dialog-title">{"Are you sure you want to delete?"}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
+              <p>{this.props.title}</p>
+              <small>{this.props.content}</small>
             </DialogContentText>
           </DialogContent>
           <DialogActions>

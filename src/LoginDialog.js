@@ -16,7 +16,6 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 
-
 class AlertDialog extends React.Component {
   
 constructor(props){
@@ -126,6 +125,7 @@ handleOnClick = () => {
   }
 } 
 
+//Hides or show password.
 handlePasswordVisibility = () => {
   this.setState({ passwordVisibility: !this.state.passwordVisibility })
 }

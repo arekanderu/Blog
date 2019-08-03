@@ -14,7 +14,7 @@ import { getFirstName, getLastName, getAvatar, getUsername } from './Action/inde
 import IconButton from '@material-ui/core/IconButton';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-
+import Connect from './Config/Database';
 
 class AlertDialog extends React.Component {
   
@@ -71,8 +71,7 @@ handleOnClick = () => {
         firstName = databaseFirstName[id];
         lastName = databaseLastName[id];
         avatar = databaseAvatar[id];
-        userName = databaseUsernames[id];
-        
+        userName = databaseUsernames[id];    
       }
     }
   })

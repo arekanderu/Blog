@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { Component } from 'react';
 import AppBar from './AppBar';
-import style from './Style/style.css'
+import style from './Style/style.css';
+import { connect } from 'react-redux';
 
-function App() {
-  return (
+class App extends Component {
+  constructor(props){
+    super(props)
+  }
+
+  render(){ 
+    return (
     <AppBar />
   );
+  }
 }
 
-export default App;
+function mapStateToProps(state){
+  return{
+    firstName: state.firstName,
+    lastName: state.lastName,
+    avatar: state.avatar,
+    userName: state.userName
+  }
+}
+export default connect(mapStateToProps)(App);
